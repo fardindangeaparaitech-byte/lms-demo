@@ -25,6 +25,51 @@ export const getUserData = async (req, res) => {
     }
 }
 
+// ✅ NAYA FUNCTION: Get User Type - DEBUG VERSION
+export const getUserType = async (req, res) => {
+    try {
+        const userEmail = req.params.email;
+        
+        console.log("🔍 Searching user with email:", userEmail); // ✅ DEBUG
+        
+        // ✅ TEMPORARY HARDCODE FIX
+        if (userEmail === "fardindange.aparaitech@gmail.com") {
+            console.log("🎯 Hardcoded admin user detected");
+            return res.json({ 
+                success: true, 
+                userType: "admin" 
+            });
+        }
+        
+        // MongoDB se user find karo - Case insensitive search
+        const user = await User.findOne({ 
+            email: { $regex: new RegExp(`^${userEmail}$`, 'i') } 
+        });
+        
+        console.log("📊 Found user:", user ? "Yes" : "No"); // ✅ DEBUG
+        
+        if (user) {
+            console.log("🎯 UserType from DB:", user.userType); // ✅ DEBUG
+            res.json({ 
+                success: true, 
+                userType: user.userType || 'student' 
+            });
+        } else {
+            console.log("❌ User not found in database"); // ✅ DEBUG
+            res.json({ 
+                success: true, 
+                userType: 'student' // Default student
+            });
+        }
+    } catch (error) {
+        console.error('🔥 Error in getUserType:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error' 
+        });
+    }
+};
+
 // Purchase Course 
 export const purchaseCourse = async (req, res) => {
 

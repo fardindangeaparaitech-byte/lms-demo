@@ -9,7 +9,7 @@ export const AppContext = createContext()
 
 export const AppContextProvider = (props) => {
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL
+    const backendUrl = "http://localhost:5000"; // ✅ HARCODED FOR TESTING
     const currency = import.meta.env.VITE_CURRENCY
 
     const navigate = useNavigate()
@@ -21,100 +21,117 @@ export const AppContextProvider = (props) => {
     const [allCourses, setAllCourses] = useState([])
     const [userData, setUserData] = useState(null)
     const [enrolledCourses, setEnrolledCourses] = useState([])
+    const [userType, setUserType] = useState('student')
+
+    // ✅ Debug state changes
+    useEffect(() => {
+        console.log("🔄 userType changed to:", userType);
+    }, [userType]);
+
+    useEffect(() => {
+        console.log("🔄 userData changed:", userData?.email);
+    }, [userData]);
+
+    // ✅ NAYA FUNCTION: Get User Type from Backend
+    const fetchUserType = async (userEmail) => {
+        try {
+            console.log("🔍 Fetching user type for:", userEmail);
+            const response = await axios.get(`${backendUrl}/api/user/type/${userEmail}`);
+            console.log("🎯 UserType API Response:", response.data);
+            
+            if (response.data.success) {
+                console.log("✅ Setting userType to:", response.data.userType);
+                setUserType(response.data.userType);
+            } else {
+                console.log("❌ UserType API failed");
+                setUserType('student');
+            }
+        } catch (error) {
+            console.log("🔥 Error fetching userType:", error);
+            setUserType('student');
+        }
+    };
 
     // Fetch All Courses
     const fetchAllCourses = async () => {
-
         try {
-
             const { data } = await axios.get(backendUrl + '/api/course/all');
-
             if (data.success) {
                 setAllCourses(data.courses)
             } else {
                 toast.error(data.message)
             }
-
         } catch (error) {
             toast.error(error.message)
         }
-
     }
 
-    // Fetch UserData 
+    // Fetch UserData - UPDATED WITH DEBUG
     const fetchUserData = async () => {
-
         try {
-
-            if (user.publicMetadata.role === 'educator') {
-                setIsEducator(true)
-            }
-
+            console.log("🔄 fetchUserData started");
+            
             const token = await getToken();
+            console.log("🔑 Token received");
 
             const { data } = await axios.get(backendUrl + '/api/user/data',
                 { headers: { Authorization: `Bearer ${token}` } })
 
+            console.log("📊 UserData API Response:", data);
+
             if (data.success) {
                 setUserData(data.user)
-            } else (
+                console.log("👤 User data set:", data.user?.email);
+                
+                // ✅ User type fetch karo
+                if (data.user && data.user.email) {
+                    await fetchUserType(data.user.email);
+                }
+            } else {
+                console.log("❌ UserData API failed");
                 toast.error(data.message)
-            )
+            }
 
         } catch (error) {
+            console.log("💥 fetchUserData error:", error);
             toast.error(error.message)
         }
-
     }
 
     // Fetch User Enrolled Courses
     const fetchUserEnrolledCourses = async () => {
-
         const token = await getToken();
-
         const { data } = await axios.get(backendUrl + '/api/user/enrolled-courses',
             { headers: { Authorization: `Bearer ${token}` } })
-
         if (data.success) {
             setEnrolledCourses(data.enrolledCourses.reverse())
         } else (
             toast.error(data.message)
         )
-
     }
 
     // Function to Calculate Course Chapter Time
     const calculateChapterTime = (chapter) => {
-
         let time = 0
-
         chapter.chapterContent.map((lecture) => time += lecture.lectureDuration)
-
         return humanizeDuration(time * 60 * 1000, { units: ["h", "m"] })
-
     }
 
     // Function to Calculate Course Duration
     const calculateCourseDuration = (course) => {
-
         let time = 0
-
         course.courseContent.map(
             (chapter) => chapter.chapterContent.map(
                 (lecture) => time += lecture.lectureDuration
             )
         )
-
         return humanizeDuration(time * 60 * 1000, { units: ["h", "m"] })
-
     }
 
     const calculateRating = (course) => {
-
         if (course.courseRatings.length === 0) {
             return 0
         }
-
         let totalRating = 0
         course.courseRatings.forEach(rating => {
             totalRating += rating.rating
@@ -132,7 +149,6 @@ export const AppContextProvider = (props) => {
         return totalLectures;
     }
 
-
     useEffect(() => {
         fetchAllCourses()
     }, [])
@@ -140,8 +156,12 @@ export const AppContextProvider = (props) => {
     // Fetch User's Data if User is Logged In
     useEffect(() => {
         if (user) {
+            console.log("👤 User detected, fetching data...");
             fetchUserData()
             fetchUserEnrolledCourses()
+        } else {
+            console.log("👤 No user logged in");
+            setUserType('student');
         }
     }, [user])
 
@@ -153,7 +173,8 @@ export const AppContextProvider = (props) => {
         enrolledCourses, fetchUserEnrolledCourses,
         calculateChapterTime, calculateCourseDuration,
         calculateRating, calculateNoOfLectures,
-        isEducator,setIsEducator
+        isEducator,setIsEducator,
+        userType, setUserType
     }
 
     return (
@@ -161,5 +182,4 @@ export const AppContextProvider = (props) => {
             {props.children}
         </AppContext.Provider>
     )
-
 }

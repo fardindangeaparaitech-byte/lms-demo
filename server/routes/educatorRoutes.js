@@ -1,8 +1,14 @@
 import express from 'express'
-import { addCourse, educatorDashboardData, getEducatorCourses, getEnrolledStudentsData, updateRoleToEducator } from '../controllers/educatorController.js';
+import { 
+    addCourse, 
+    educatorDashboardData, 
+    getEducatorCourses, 
+    getEnrolledStudentsData, 
+    updateRoleToEducator,
+    deleteCourse  // ✅ NAYA IMPORT ADD KARO
+} from '../controllers/educatorController.js';
 import upload from '../configs/multer.js';
 import { protectEducator } from '../middlewares/authMiddleware.js';
-
 
 const educatorRouter = express.Router()
 
@@ -21,5 +27,7 @@ educatorRouter.get('/dashboard', protectEducator, educatorDashboardData)
 // Get Educator Students Data
 educatorRouter.get('/enrolled-students', protectEducator, getEnrolledStudentsData)
 
+// ✅ NAYA ROUTE: Delete Course
+educatorRouter.delete('/course/:courseId', protectEducator, deleteCourse)
 
 export default educatorRouter;

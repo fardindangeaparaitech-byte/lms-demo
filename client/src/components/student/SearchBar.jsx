@@ -1,27 +1,54 @@
-import React, { useState } from 'react'
-import { assets } from '../../assets/assets'
-import { useNavigate } from 'react-router-dom'
+// components/student/SearchBar.jsx
+import React, { useState } from 'react';
+import { assets } from '../../assets/assets';
 
-const SearchBar = ({ data }) => {
+const SearchBar = ({ onSearch, initialValue = '' }) => {
+    const [query, setQuery] = useState(initialValue);
 
-  const navigate = useNavigate()
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSearch(query);
+    };
 
-  const [input, setInput] = useState(data ? data : '')
+    const handleInputChange = (e) => {
+        const value = e.target.value;
+        setQuery(value);
+        // Optional: Real-time search (remove if you only want search on submit)
+        // onSearch(value);
+    };
 
-  const onSearchHandler = (e) => {
-    e.preventDefault()
+    const clearSearch = () => {
+        setQuery('');
+        onSearch('');
+    };
 
-    navigate('/course-list/' + input)
+    return (
+        <form onSubmit={handleSubmit} className="w-full max-w-md">
+            <div className="relative">
+                <input
+                    type="text"
+                    placeholder="Search courses..."
+                    value={query}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 pl-12 pr-12 bg-white border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                />
+                <img 
+                    src={assets.search_icon} 
+                    alt="Search" 
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                />
+                {query && (
+                    <button
+                        type="button"
+                        onClick={clearSearch}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                    >
+                        <img src={assets.cross_icon} alt="Clear" className="w-4 h-4" />
+                    </button>
+                )}
+            </div>
+        </form>
+    );
+};
 
-  }
-
-  return (
-    <form onSubmit={onSearchHandler} className="max-w-xl w-full md:h-14 h-12 flex items-center bg-white border border-gray-500/20 rounded">
-      <img className="md:w-auto w-10 px-3" src={assets.search_icon} alt="search_icon" />
-      <input onChange={e => setInput(e.target.value)} value={input} type="text" className="w-full h-full outline-none text-gray-500/80" placeholder="Search for courses" />
-      <button type='submit' className="bg-blue-600 rounded text-white md:px-10 px-7 md:py-3 py-2 mx-1">Search</button>
-    </form>
-  )
-}
-
-export default SearchBar
+export default SearchBar;

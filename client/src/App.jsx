@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Routes, Route, useLocation, useMatch } from 'react-router-dom'
+import { Routes, Route, useMatch } from 'react-router-dom'
 import Navbar from './components/student/Navbar'
 import Home from './pages/student/Home'
 import CourseDetails from './pages/student/CourseDetails'
@@ -10,7 +10,7 @@ import MyCourses from './pages/educator/MyCourses'
 import StudentsEnrolled from './pages/educator/StudentsEnrolled'
 import Educator from './pages/educator/Educator'
 import 'quill/dist/quill.snow.css'
-import 'react-toastify/dist/ReactToastify.css';
+import 'react-toastify/dist/ReactToastify.css'
 import { ToastContainer } from 'react-toastify'
 import Player from './pages/student/Player'
 import MyEnrollments from './pages/student/MyEnrollments'
@@ -33,11 +33,17 @@ const App = () => {
         <Route path="/my-enrollments" element={<MyEnrollments />} />
         <Route path="/player/:courseId" element={<Player />} />
         <Route path="/loading/:path" element={<Loading />} />
-        <Route path='/educator' element={<Educator />}>
-          <Route path='/educator' element={<Dashboard />} />
-          <Route path='add-course' element={<AddCourse />} />
-          <Route path='my-courses' element={<MyCourses />} />
-          <Route path='student-enrolled' element={<StudentsEnrolled />} />
+        
+        {/* Missing Routes */}
+        <Route path="/resources" element={<div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center"><h1 className="text-3xl font-bold">Resources - Coming Soon</h1></div>} />
+        <Route path="/success-stories" element={<div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center"><h1 className="text-3xl font-bold">Success Stories - Coming Soon</h1></div>} />
+        
+        {/* ✅ EDUCATOR ROUTES - SIRF YEH RAKHO */}
+        <Route path="/educator" element={<Educator />}>
+          <Route index element={<Dashboard />} />
+          <Route path="add-course" element={<AddCourse />} />
+          <Route path="my-courses" element={<MyCourses />} />
+          <Route path="student-enrolled" element={<StudentsEnrolled />} />
         </Route>
       </Routes>
     </div>

@@ -6,9 +6,7 @@ import { clerkClient } from '@clerk/express'
 
 // update role to educator
 export const updateRoleToEducator = async (req, res) => {
-
     try {
-
         const userId = req.auth.userId
 
         await clerkClient.users.updateUserMetadata(userId, {
@@ -22,18 +20,13 @@ export const updateRoleToEducator = async (req, res) => {
     } catch (error) {
         res.json({ success: false, message: error.message })
     }
-
 }
 
 // Add New Course
 export const addCourse = async (req, res) => {
-
     try {
-
         const { courseData } = req.body
-
         const imageFile = req.file
-
         const educatorId = req.auth.userId
 
         if (!imageFile) {
@@ -41,13 +34,11 @@ export const addCourse = async (req, res) => {
         }
 
         const parsedCourseData = await JSON.parse(courseData)
-
         parsedCourseData.educator = educatorId
 
         const newCourse = await Course.create(parsedCourseData)
 
         const imageUpload = await cloudinary.uploader.upload(imageFile.path)
-
         newCourse.courseThumbnail = imageUpload.secure_url
 
         await newCourse.save()
@@ -55,24 +46,50 @@ export const addCourse = async (req, res) => {
         res.json({ success: true, message: 'Course Added' })
 
     } catch (error) {
-
         res.json({ success: false, message: error.message })
-
     }
 }
 
 // Get Educator Courses
 export const getEducatorCourses = async (req, res) => {
     try {
-
         const educator = req.auth.userId
-
         const courses = await Course.find({ educator })
-
         res.json({ success: true, courses })
 
     } catch (error) {
         res.json({ success: false, message: error.message })
+    }
+}
+
+// ✅ NAYA FUNCTION: Course Delete Karne Ka
+export const deleteCourse = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const educatorId = req.auth.userId;
+
+        console.log("🔍 Deleting course:", courseId, "by educator:", educatorId);
+
+        // Check if course exists
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.json({ success: false, message: 'Course not found' });
+        }
+
+        // Check if course belongs to educator
+        if (course.educator.toString() !== educatorId) {
+            return res.json({ success: false, message: 'Unauthorized to delete this course' });
+        }
+
+        // Delete course from database
+        await Course.findByIdAndDelete(courseId);
+
+        console.log("✅ Course deleted successfully");
+
+        res.json({ success: true, message: 'Course deleted successfully' });
+    } catch (error) {
+        console.error("❌ Error deleting course:", error);
+        res.json({ success: false, message: error.message });
     }
 }
 
