@@ -9,7 +9,8 @@ export const AppContext = createContext()
 
 export const AppContextProvider = (props) => {
 
-    const backendUrl = "http://localhost:5000";
+    // const backendUrl = "http://localhost:5000";
+    const backendUrl = "https://lms-backend-8swt.onrender.com";
     const currency = import.meta.env.VITE_CURRENCY
 
     const navigate = useNavigate()
