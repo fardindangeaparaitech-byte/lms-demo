@@ -2,9 +2,6 @@ import Course from "../models/Course.js"
 import { CourseProgress } from "../models/CourseProgress.js"
 import { Purchase } from "../models/Purchase.js"
 import User from "../models/User.js"
-import stripe from "stripe"
-
-
 
 // Get User Data
 export const getUserData = async (req, res) => {
@@ -30,7 +27,7 @@ export const getUserType = async (req, res) => {
     try {
         const userEmail = req.params.email;
         
-        console.log("🔍 Searching user with email:", userEmail); // ✅ DEBUG
+        console.log("🔍 Searching user with email:", userEmail);
         
         // ✅ TEMPORARY HARDCODE FIX
         if (userEmail === "fardindange.aparaitech@gmail.com") {
@@ -46,16 +43,16 @@ export const getUserType = async (req, res) => {
             email: { $regex: new RegExp(`^${userEmail}$`, 'i') } 
         });
         
-        console.log("📊 Found user:", user ? "Yes" : "No"); // ✅ DEBUG
+        console.log("📊 Found user:", user ? "Yes" : "No");
         
         if (user) {
-            console.log("🎯 UserType from DB:", user.userType); // ✅ DEBUG
+            console.log("🎯 UserType from DB:", user.userType);
             res.json({ 
                 success: true, 
                 userType: user.userType || 'student' 
             });
         } else {
-            console.log("❌ User not found in database"); // ✅ DEBUG
+            console.log("❌ User not found in database");
             res.json({ 
                 success: true, 
                 userType: 'student' // Default student
@@ -70,16 +67,13 @@ export const getUserType = async (req, res) => {
     }
 };
 
-// Purchase Course 
+// ✅ UPDATED: Purchase Course - WITH RAZORPAY LINK
 export const purchaseCourse = async (req, res) => {
-
     try {
-
         const { courseId } = req.body
-        const { origin } = req.headers
-
-
         const userId = req.auth.userId
+
+        console.log("💰 Purchase request:", { courseId, userId });
 
         const courseData = await Course.findById(courseId)
         const userData = await User.findById(userId)
@@ -88,65 +82,112 @@ export const purchaseCourse = async (req, res) => {
             return res.json({ success: false, message: 'Data Not Found' })
         }
 
+        // ✅ CHECK IF ALREADY ENROLLED
+        if (userData.enrolledCourses.includes(courseId)) {
+            return res.json({ 
+                success: false, 
+                message: 'You are already enrolled in this course' 
+            });
+        }
+
         const purchaseData = {
             courseId: courseData._id,
             userId,
             amount: (courseData.coursePrice - courseData.discount * courseData.coursePrice / 100).toFixed(2),
+            status: 'completed'
         }
 
         const newPurchase = await Purchase.create(purchaseData)
 
-        // Stripe Gateway Initialize
-        const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY)
+        // ✅ IMMEDIATELY ENROLL USER (Payment se pehle hi)
+        userData.enrolledCourses.push(courseId);
+        await userData.save();
 
-        const currency = process.env.CURRENCY.toLocaleLowerCase()
+        // ✅ ADD USER TO COURSE'S ENROLLED STUDENTS
+        courseData.enrolledStudents.push(userId);
+        await courseData.save();
 
-        // Creating line items to for Stripe
-        const line_items = [{
-            price_data: {
-                currency,
-                product_data: {
-                    name: courseData.courseTitle
-                },
-                unit_amount: Math.floor(newPurchase.amount) * 100
-            },
-            quantity: 1
-        }]
+        console.log("✅ User enrolled successfully:", { 
+            userId, 
+            courseId: courseData._id,
+            courseTitle: courseData.courseTitle,
+            enrolledCoursesCount: userData.enrolledCourses.length
+        });
 
-        const session = await stripeInstance.checkout.sessions.create({
-            success_url: `${origin}/loading/my-enrollments`,
-            cancel_url: `${origin}/`,
-            line_items: line_items,
-            mode: 'payment',
-            metadata: {
-                purchaseId: newPurchase._id.toString()
-            }
-        })
+        // ✅ RAZORPAY PAYMENT LINK
+        const razorpayPaymentLink = "https://rzp.io/l/8SjZQ5sW";
 
-        res.json({ success: true, session_url: session.url });
-
+        res.json({ 
+            success: true, 
+            session_url: razorpayPaymentLink,
+            message: 'Redirecting to Razorpay payment...'
+        });
 
     } catch (error) {
+        console.error("💥 Purchase course error:", error);
         res.json({ success: false, message: error.message });
     }
 }
 
-// Users Enrolled Courses With Lecture Links
+// ✅ UPDATED: Users Enrolled Courses With Lecture Links - BETTER ERROR HANDLING
 export const userEnrolledCourses = async (req, res) => {
-
     try {
+        const userId = req.auth.userId;
 
-        const userId = req.auth.userId
+        console.log("🔍 Fetching enrolled courses for user:", userId);
 
-        const userData = await User.findById(userId)
-            .populate('enrolledCourses')
+        const userData = await User.findById(userId).populate('enrolledCourses');
 
-        res.json({ success: true, enrolledCourses: userData.enrolledCourses })
+        if (!userData) {
+            console.log("❌ User not found");
+            return res.json({ success: false, message: 'User not found' });
+        }
+
+        console.log("✅ Found enrolled courses:", userData.enrolledCourses.length);
+
+        res.json({ 
+            success: true, 
+            enrolledCourses: userData.enrolledCourses 
+        });
 
     } catch (error) {
-        res.json({ success: false, message: error.message })
+        console.error("💥 Error in userEnrolledCourses:", error);
+        res.json({ 
+            success: false, 
+            message: error.message 
+        });
     }
+}
 
+// ✅ NEW FUNCTION: Get User Enrolled Courses - ALTERNATIVE VERSION
+export const getUserEnrolledCourses = async (req, res) => {
+    try {
+        const userId = req.auth.userId;
+        
+        console.log("🔍 Fetching enrolled courses for user (alternative):", userId);
+
+        // Find user with enrolled courses populated
+        const user = await User.findById(userId).populate('enrolledCourses');
+        
+        if (!user) {
+            console.log("❌ User not found");
+            return res.json({ success: false, message: 'User not found' });
+        }
+
+        console.log("✅ Found user with enrolled courses:", user.enrolledCourses.length);
+
+        res.json({ 
+            success: true, 
+            enrolledCourses: user.enrolledCourses 
+        });
+
+    } catch (error) {
+        console.error("💥 Error in getUserEnrolledCourses:", error);
+        res.json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
 }
 
 // Update User Course Progress

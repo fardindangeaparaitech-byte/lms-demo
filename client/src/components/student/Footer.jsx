@@ -24,13 +24,13 @@ const Footer = () => {
               <a href="#" aria-label="Facebook" className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-110">
                 <Facebook size={16} />
               </a>
-              <a href="#" aria-label="Twitter" className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-blue-400 transition-all duration-300 transform hover:scale-110">
+              <a href="https://x.com/Aparaitech" aria-label="Twitter" className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-blue-400 transition-all duration-300 transform hover:scale-110">
                 <Twitter size={16} />
               </a>
-              <a href="#" aria-label="Instagram" className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-pink-600 transition-all duration-300 transform hover:scale-110">
+              <a href="https://www.instagram.com/aparaitech_global/" aria-label="Instagram" className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-pink-600 transition-all duration-300 transform hover:scale-110">
                 <Instagram size={16} />
               </a>
-              <a href="#" aria-label="LinkedIn" className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-110">
+              <a href="https://www.linkedin.com/company/aparaitech/posts/?feedView=all" aria-label="LinkedIn" className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-110">
                 <Linkedin size={16} />
               </a>
             </div>

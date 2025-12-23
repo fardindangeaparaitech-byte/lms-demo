@@ -1,19 +1,45 @@
 import mongoose from 'mongoose';
 
-const lectureSchema = new mongoose.Schema({
-    lectureId: { type: String, required: true },
-    lectureTitle: { type: String, required: true },
-    lectureDuration: { type: Number, required: true },
-    lectureUrl: { type: String, required: true },
+// Common content schema that supports both lectures and tasks
+const contentSchema = new mongoose.Schema({
+    // Common fields
+    contentId: { type: String, required: true },
+    contentTitle: { type: String, required: true },
+    contentType: { 
+        type: String, 
+        enum: ['lecture', 'task'], 
+        default: 'task',
+        required: true 
+    },
+    contentOrder: { type: Number, required: true },
     isPreviewFree: { type: Boolean, required: true },
-    lectureOrder: { type: Number, required: true }
+    
+    // Lecture specific fields (optional for tasks)
+    lectureDuration: { 
+        type: Number, 
+        required: function() { return this.contentType === 'lecture'; } 
+    },
+    lectureUrl: { 
+        type: String, 
+        required: function() { return this.contentType === 'lecture'; } 
+    },
+    
+    // Task specific fields (optional for lectures)
+    taskDescription: { 
+        type: String, 
+        required: function() { return this.contentType === 'task'; } 
+    },
+    taskPdfUrl: { 
+        type: String, 
+        required: function() { return this.contentType === 'task'; } 
+    }
 }, { _id: false }); 
 
 const chapterSchema = new mongoose.Schema({
     chapterId: { type: String, required: true },
     chapterOrder: { type: Number, required: true },
     chapterTitle: { type: String, required: true },
-    chapterContent: [lectureSchema] // Use the lecture schema here
+    chapterContent: [contentSchema] // Use the new content schema here
 }, { _id: false });
 
 const courseSchema = new mongoose.Schema({

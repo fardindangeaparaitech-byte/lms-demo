@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 const HeroSlider = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const slides = [
+  const slides = [ //silder animation ke images 
     {
       image: "/slider-images/AparaitechSlider1.png"
     },
@@ -11,10 +11,10 @@ const HeroSlider = () => {
       image: "/slider-images/python.png"
     },
     {
-      image: "/slider-images/Java2.png" // Add different images when you have them
+      image: "/slider-images/Java2.png" 
     },
     {
-      image: "/slider-images/Cpp.png" // Add different images when you have them
+      image: "/slider-images/Cpp.png" 
     }
   ];
 

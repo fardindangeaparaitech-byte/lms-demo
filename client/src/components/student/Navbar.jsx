@@ -67,7 +67,7 @@ const Navbar = () => {
                     onMouseLeave={() => setShowCoursesDropdown(false)}
                   >
                     <div className="px-3 py-2 border-b border-gray-100">
-                      <h3 className="font-semibold text-gray-800 text-sm">Course Categories</h3>
+                      <h3 className="font-semibold text-gray-800 text-sm">Project Categories</h3>
                     </div>
                     <div className="grid grid-cols-1">
                       {courseCategories.map((category, index) => (

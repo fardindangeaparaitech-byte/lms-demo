@@ -10,6 +10,10 @@ const MyEnrollments = () => {
 
     const [progressArray, setProgressData] = useState([])
     const [loading, setLoading] = useState(true)
+    const [forceRefresh, setForceRefresh] = useState(0)
+
+    console.log("📊 MyEnrollments - enrolledCourses:", enrolledCourses.length);
+    console.log("👤 MyEnrollments - userData:", userData);
 
     const getCourseProgress = async () => {
         try {
@@ -37,19 +41,30 @@ const MyEnrollments = () => {
         }
     };
 
+    // ✅ REFRESH ENROLLMENTS WHEN PAGE LOADS
     useEffect(() => {
+        console.log("🔄 MyEnrollments mounted, fetching enrolled courses...");
         if (userData) {
-            fetchUserEnrolledCourses()
+            fetchUserEnrolledCourses();
         }
-    }, [userData])
+    }, [userData, forceRefresh]);
 
     useEffect(() => {
         if (enrolledCourses.length > 0) {
-            getCourseProgress()
+            console.log("📈 Fetching progress for", enrolledCourses.length, "courses");
+            getCourseProgress();
         } else {
+            console.log("ℹ️ No courses to show progress for");
             setLoading(false);
         }
     }, [enrolledCourses])
+
+    // ✅ MANUAL REFRESH BUTTON FUNCTION
+    const handleRefresh = () => {
+        console.log("🔄 Manual refresh triggered");
+        setLoading(true);
+        setForceRefresh(prev => prev + 1);
+    }
 
     return (
         <>
@@ -58,24 +73,37 @@ const MyEnrollments = () => {
                     
                     {/* Header Section */}
                     <div className="mb-10">
-                        <h1 className="text-4xl font-bold text-gray-900 mb-3">My Enrollments</h1>
-                        <p className="text-gray-600 text-lg">
-                            <span 
-                                onClick={() => navigate('/')} 
-                                className="text-purple-600 cursor-pointer hover:text-purple-700 font-medium transition-colors duration-200"
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h1 className="text-4xl font-bold text-gray-900 mb-3">My Enrollments</h1>
+                                <p className="text-gray-600 text-lg">
+                                    <span 
+                                        onClick={() => navigate('/')} 
+                                        className="text-purple-600 cursor-pointer hover:text-purple-700 font-medium transition-colors duration-200"
+                                    >
+                                        Home
+                                    </span> 
+                                    <span className="text-gray-400 mx-2">/</span> 
+                                    <span className="text-gray-800 font-medium">My Enrollments</span>
+                                </p>
+                            </div>
+                            {/* ✅ REFRESH BUTTON */}
+                            <button 
+                                onClick={handleRefresh}
+                                disabled={loading}
+                                className="flex items-center gap-2 bg-white border border-purple-600 text-purple-600 px-4 py-2 rounded-lg hover:bg-purple-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Home
-                            </span> 
-                            <span className="text-gray-400 mx-2">/</span> 
-                            <span className="text-gray-800 font-medium">My Enrollments</span>
-                        </p>
+                                <span className={loading ? "animate-spin" : ""}>🔄</span>
+                                Refresh
+                            </button>
+                        </div>
                     </div>
 
                     {/* Enrollments Count */}
                     <div className="mb-8">
                         <p className="text-gray-600">
                             <span className="font-semibold text-purple-600">{enrolledCourses.length}</span> 
-                            {enrolledCourses.length === 1 ? ' course enrolled' : ' courses enrolled'}
+                            {enrolledCourses.length === 1 ? ' Project enrolled' : ' Projects enrolled'}
                         </p>
                     </div>
 
@@ -90,13 +118,13 @@ const MyEnrollments = () => {
                             </div>
                             <h3 className="text-2xl font-semibold text-gray-900 mb-3">No enrollments yet</h3>
                             <p className="text-gray-600 text-lg mb-8 max-w-md mx-auto">
-                                You haven't enrolled in any courses yet. Start your learning journey today!
+                                You haven't enrolled in any Project yet. Start your learning journey today!
                             </p>
                             <button 
                                 onClick={() => navigate('/course-list')}
                                 className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
                             >
-                                Browse Courses
+                                Browse Projects
                             </button>
                         </div>
                     ) : (
@@ -152,10 +180,10 @@ const MyEnrollments = () => {
 
                                                 {/* Course Details */}
                                                 <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                                                    <div className="flex items-center gap-2">
+                                                    {/* <div className="flex items-center gap-2">
                                                         <span className="text-purple-500">⏱️</span>
                                                         <span>{calculateCourseDuration(course)}</span>
-                                                    </div>
+                                                    </div> */}
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-purple-500">📺</span>
                                                         <span>
